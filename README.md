@@ -1,2 +1,4 @@
 # PrimoContentFeeds
-Script to automate creation of HTML output from Primo Search API
+Script to automate creation of book lists in HTML from Primo Search API
+
+Developed for a hosted instance of Primo (not Primo VE)
