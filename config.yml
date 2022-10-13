@@ -1,0 +1,49 @@
+### configuration file for Primo Content Feeds
+
+# Select the appropriate api_gateway_url for your region, see https://developers.exlibrisgroup.com/primo/apis/#calling
+#
+# North America  - https://api-na.hosted.exlibrisgroup.com
+# Europe         - https://api-eu.hosted.exlibrisgroup.com
+# Asia Pacific   - https://api-ap.hosted.exlibrisgroup.com
+# Canada         - https://api-ca.hosted.exlibrisgroup.com
+# China          - https://api-cn.hosted.exlibrisgroup.com.cn
+#
+# E.g. 'https://api-na.hosted.exlibrisgroup.com' if your region is North America
+api_gateway_url: https://api-na.hosted.exlibrisgroup.com
+
+# Your view ID. You will find this value in the URL of a regular search in Primo
+vid: YOUR_VIEW_ID
+
+# Your tab value. Change if needed, you will find this value in the URL of a regular search in Primo
+tab: default_tab
+
+# Your scope value. Change if needed, you will find this value in the URL of a regular search in Primo
+scope: All_resources
+
+# Indicates whether PC records that do not have full text are displayed in the results.
+# The valid values are true (display all records even if they do not have full text) or false (display full text records only).
+pcAvailability: false
+
+# Your Primo Search API key
+apikey: YOUR_API_KEY
+
+# Your Primo hostname, e.g. 'SOMETHING.hosted.exlibrisgroup.com'
+primo_hostname: YOUR_PRIMO_HOSTNAME
+
+# Full path to book list requests file
+requests_file_path: /path/to/your/custom/requests.csv
+
+# Full path to directory to save output files, this would normally be a directory exposed via web server
+output_dir: /path/to/your/custom/output
+
+# Limit book covers api call rate per minute, if needed. Set to 0 for no limit.
+# For unregistered users of the Google Books API, this value should be 100 (as of Oct 2022)
+max_book_cover_calls_per_min: 100
+
+# Proxy servers, if needed. Leave as it is if not using proxies.
+#
+# E.g. to use 'proxy1.domain.net' for http and 'proxy1.domain.net' for https:
+# proxies:
+#     http: proxy1.domain.net
+#     https: proxy2.domain.net
+proxies:

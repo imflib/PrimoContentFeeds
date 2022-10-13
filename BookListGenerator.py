@@ -1,6 +1,7 @@
 # This script will generate the HTML output of Primo Searches to be embedded, for instance, in LibGuides widgets.
 #
 # Input:
+#   - config.yml   -> configuration file in the same directory as this script
 #   - requests.csv -> search ids, query and output parameters
 #   - arguments    -> comma-separated list of search ids to process (e.g. 1,3). If not present, all searches will be launched
 #
@@ -9,6 +10,7 @@
 
 import os
 import sys
+import yaml
 import time
 import requests
 import re
@@ -21,42 +23,21 @@ from time import sleep
 
 ### CONFIGURATION
 
-# Primo Search API endpoint
-api_gateway_url = 'SELECT_FROM_BELOW'   # e.g. 'https://api-na.hosted.exlibrisgroup.com' if your region is North America
-# select your regional api_gateway_url (check https://developers.exlibrisgroup.com/primo/apis/#calling)
-# North America  - https://api-na.hosted.exlibrisgroup.com
-# Europe         - https://api-eu.hosted.exlibrisgroup.com
-# Asia Pacific   - https://api-ap.hosted.exlibrisgroup.com
-# Canada         - https://api-ca.hosted.exlibrisgroup.com
-# China          - https://api-cn.hosted.exlibrisgroup.com.cn
-vid = 'YOUR_VIEW_ID'      # you will find this value in the URL of a regular search in Primo
-tab = 'default_tab'       # change if needed, you will find this value in the URL of a regular search in Primo
-scope = 'All_resources'   # change if needed, you will find this value in the URL of a regular search in Primo
-pcAvailability = 'false'  # change if needed, check options in Primo Search API documentation
-api_endpoint = api_gateway_url + "/primo/v1/search?vid=" + vid + "&tab=" + tab + "&scope=" + scope + "&pcAvailability=" + pcAvailability
-
-# Primo Search API key
-apikey = 'YOUR_API_KEY'
-
-# Primo hostname
-primo_hostname = 'YOUR_PRIMO_HOSTNAME'  # e.g. 'SOMETHING.hosted.exlibrisgroup.com'
-
 # directory where this script is located
 basedir = os.path.dirname(os.path.realpath(__file__)) + os.path.sep
 
-# path to book list requests file
-requests_file_path = basedir + "requests.csv"
+# Read config file
+with open(basedir + "config.yml", "r") as f:
+    cfg = yaml.safe_load(f)
 
-# directory to save output files
-output_dir = basedir + "_output" + os.path.sep   # change as needed, this would normally be a directory exposed via web server
+# Build Primo Search API endpoint
+api_endpoint = cfg['api_gateway_url'] + "/primo/v1/search?vid=" + cfg['vid'] + "&tab=" + cfg['tab'] + "&scope=" + cfg['scope'] + "&pcAvailability=" + str(cfg['pcAvailability'])
 
-# limit book covers api call rate per minute, if needed. Set to 0 for no limit.
-# for unregistered users of the Google Books API, this value should be 100 (as of Oct 2022)
-max_book_cover_calls_per_min = 100
+# Directory to save output files
+output_dir = cfg['output_dir'] + os.path.sep
 
-# proxy servers, if needed
-proxies = {
-}
+# Proxy servers as empty object if undefined
+proxies = {} if not cfg['proxies'] else cfg['proxies']
 
 
 
@@ -155,7 +136,7 @@ def generate_html(url):
             
         elif "detailsGetit1" in doc["delivery"]["availabilityLinks"]:
             docID = doc["pnx"]["control"]["recordid"][0]
-            info["catURL"] = "https://" + primo_hostname + "/primo-explore/fulldisplay?vid=" + vid + "&docid=" + docID + "&context=" + doc["context"]
+            info["catURL"] = "https://" + cfg['primo_hostname'] + "/primo-explore/fulldisplay?vid=" + cfg['vid'] + "&docid=" + docID + "&context=" + doc["context"]
         
         bookInfo.append(info)
      
@@ -239,11 +220,11 @@ current_year = date.today().year
 
 # set waiting time between calls for book covers
 pause_book_cover = 0
-if max_book_cover_calls_per_min and max_book_cover_calls_per_min > 0:
-    pause_book_cover = 60 / max_book_cover_calls_per_min
+if cfg['max_book_cover_calls_per_min'] and cfg['max_book_cover_calls_per_min'] > 0:
+    pause_book_cover = 60 / cfg['max_book_cover_calls_per_min']
 
 # read book list requests into a dictionary with first row as keys
-with open(requests_file_path) as file:
+with open(cfg['requests_file_path']) as file:
     list_requests = [{k: v for k, v in row.items()}
         for row in csv.DictReader(file, skipinitialspace=True)]
 
@@ -270,7 +251,7 @@ for r in list_requests:
         if not limit.isnumeric():
             limit = ''
 
-        URL = api_endpoint + "&q=" + q + "&multiFacets=" + mfacets + "&limit=" + limit + "&sort=" + sort_value + "&apikey=" + apikey
+        URL = api_endpoint + "&q=" + q + "&multiFacets=" + mfacets + "&limit=" + limit + "&sort=" + sort_value + "&apikey=" + cfg['apikey']
         
         API_URLS[html_path]=URL
         
