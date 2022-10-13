@@ -87,8 +87,7 @@ def generate_html(url):
     res = requests.get(url, proxies=proxies)
     res_json=res.json()
     
-    # retrieve book covers for each book
-    print(" # getting book covers...")
+    print(" # processing results...")
     # array of json for each book
     docs = res_json["docs"]
     
@@ -97,12 +96,18 @@ def generate_html(url):
 
     # get info for each book
     for doc in docs:
+        exclude_doc = False
         # store all ISBN values
         isbns=[]
         if "isbn" in doc["pnx"]["search"]:
             for isbn in doc["pnx"]["search"]["isbn"]:
+                if isbn in ids_to_exclude:
+                    exclude_doc = True
+                    print ('   ! excluding book with ISBN: ' + isbn)
                 if isbn not in isbns: isbns.append(isbn)
-
+        
+        if exclude_doc: continue
+        
         cover_link = get_book_cover(isbns)
         # default to generic book cover image
         # Icon made by Freepik from www.flaticon.com
@@ -231,7 +236,8 @@ with open(cfg['requests_file_path']) as file:
 # for each request, append booklist URL and API query URL to dictionary
 API_URLS={}
 
-for r in list_requests:
+for r_raw in list_requests:
+    r = dict((k.strip(), v.strip()) for k, v in r_raw.items())
     if not list_ids or (list_ids and r['id'] in list_ids):
         html_path = r['file_name']
         q = get_query(r['query'])
@@ -247,15 +253,20 @@ for r in list_requests:
         
         sort_value = r['sort']
         
-        limit = str(int(r['results_limit'])).strip()
+        limit = r['results_limit']
         if not limit.isnumeric():
             limit = ''
-
+        
+        ids_to_exclude = r['exclude_isbns'].split(';') if r['exclude_isbns'] else []
+        
+        if ids_to_exclude and limit:
+            limit = str(int(limit) + len(ids_to_exclude))
+        
         URL = api_endpoint + "&q=" + q + "&multiFacets=" + mfacets + "&limit=" + limit + "&sort=" + sort_value + "&apikey=" + cfg['apikey']
         
         API_URLS[html_path]=URL
-        
-    
+
+
 # for each booklist, create html based on API results
 for listURL, query in API_URLS.items():
     

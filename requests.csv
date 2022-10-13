@@ -1,2 +1,2 @@
-id,file_name,query,facets,from_YYYY,sort,results_limit
-1,climatechange.html,"title,contains,(Climate%20OR%20green%20OR%20sustainable)%20AND%20(change%20OR%20finance),OR&query=sub,contains,(climatic%20changes)%20OR%20(climate%20change),OR&query=sub,contains,(carbon%20OR%20greenhouse),OR&query=sub,contains,finance%20AND%20(environmental%20OR%20sustainable)","facet_rtype,include,books|,|facet_tlevel,exclude,open_access",2020,date,20
+id,file_name,query,facets,from_YYYY,sort,results_limit,exclude_isbns
+1,climatechange.html,"title,contains,(Climate%20OR%20green%20OR%20sustainable)%20AND%20(change%20OR%20finance),OR&query=sub,contains,(climatic%20changes)%20OR%20(climate%20change),OR&query=sub,contains,(carbon%20OR%20greenhouse),OR&query=sub,contains,finance%20AND%20(environmental%20OR%20sustainable)","facet_rtype,include,books|,|facet_tlevel,exclude,open_access",2020,date,20,9781234567890;9781234567891
