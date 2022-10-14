@@ -82,9 +82,9 @@ def get_query(q):
     return q
 
 
-def generate_html(url):
+def generate_html(req):
     print(" # calling Primo Search API...")
-    res = requests.get(url, proxies=proxies)
+    res = requests.get(req['api_call'], proxies=proxies)
     res_json=res.json()
     
     print(" # processing results...")
@@ -101,7 +101,7 @@ def generate_html(url):
         isbns=[]
         if "isbn" in doc["pnx"]["search"]:
             for isbn in doc["pnx"]["search"]["isbn"]:
-                if isbn in ids_to_exclude:
+                if isbn in req['ids_to_exclude']:
                     exclude_doc = True
                     print ('   ! excluding book with ISBN: ' + isbn)
                 if isbn not in isbns: isbns.append(isbn)
@@ -233,15 +233,17 @@ with open(cfg['requests_file_path']) as file:
     list_requests = [{k: v for k, v in row.items()}
         for row in csv.DictReader(file, skipinitialspace=True)]
 
-# for each request, append booklist URL and API query URL to dictionary
-API_URLS={}
+# create a list of requests to process
+req_list = []
 
 for r_raw in list_requests:
     r = dict((k.strip(), v.strip()) for k, v in r_raw.items())
+    
     if not list_ids or (list_ids and r['id'] in list_ids):
-        html_path = r['file_name']
         q = get_query(r['query'])
+        
         mfacets = urllib.parse.quote(r['facets'])
+        
         from_year = r['from_YYYY']
         
         # if from_year has a value
@@ -262,21 +264,26 @@ for r_raw in list_requests:
         if ids_to_exclude and limit:
             limit = str(int(limit) + len(ids_to_exclude))
         
-        URL = api_endpoint + "&q=" + q + "&multiFacets=" + mfacets + "&limit=" + limit + "&sort=" + sort_value + "&apikey=" + cfg['apikey']
+        api_call = api_endpoint + "&q=" + q + "&multiFacets=" + mfacets + "&limit=" + limit + "&sort=" + sort_value + "&apikey=" + cfg['apikey']
         
-        API_URLS[html_path]=URL
+        req = {}
+        req['file_name'] = r['file_name']
+        req['api_call'] = api_call
+        req['ids_to_exclude'] = ids_to_exclude
+        
+        req_list.append(req)
 
 
-# for each booklist, create html based on API results
-for listURL, query in API_URLS.items():
+# create html based on API results for each request / search
+for req in req_list:
     
     start_time = time.time()
     
-    print( '\n ### updating: ' + listURL)
-    html = generate_html(query)
+    print( '\n ### updating: ' + req['file_name'])
+    html = generate_html(req)
     
     print(" # writing HTML output...")
-    html_file= open(output_dir + listURL, "w", encoding='utf8')
+    html_file= open(output_dir + req['file_name'], "w", encoding='utf8')
     html_file.write(html)
     html_file.close()
     
