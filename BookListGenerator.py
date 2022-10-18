@@ -18,6 +18,7 @@ import csv
 import urllib.parse
 from datetime import date
 from time import sleep
+from json import dumps
 
 
 
@@ -35,6 +36,9 @@ api_endpoint = cfg['api_gateway_url'] + "/primo/v1/search?vid=" + cfg['vid'] + "
 
 # Directory to save output files
 output_dir = cfg['output_dir'] + os.path.sep
+
+# Directory to save API response raw files, if enabled
+log_api_response_dir = cfg['log_api_response_dir'] + os.path.sep if cfg['log_api_response'] else None
 
 # Proxy servers as empty object if undefined
 proxies = {} if not cfg['proxies'] else cfg['proxies']
@@ -86,6 +90,12 @@ def generate_html(req):
     print(" # calling Primo Search API...")
     res = requests.get(req['api_call'], proxies=proxies)
     res_json=res.json()
+    
+    # write raw API JSON response to file, if enabled in config
+    if cfg['log_api_response']:
+        json_file= open(log_api_response_dir + req['file_name'] + '.json', "w", encoding='utf8')
+        json_file.write(dumps(res_json, sort_keys=True, indent=4))
+        json_file.close()
     
     print(" # processing results...")
     # array of json for each book
@@ -216,7 +226,10 @@ else:
     list_ids = False
 
 # ensure we have required directories
-for directory in [output_dir]:
+dir_list = [output_dir]
+if cfg['log_api_response']: dir_list.append(log_api_response_dir)
+
+for directory in dir_list:
     if not os.path.exists(directory):
         os.makedirs(directory)
 

@@ -40,6 +40,11 @@ output_dir: /path/to/your/custom/output
 # For unregistered users of the Google Books API, this value should be 100 (as of Oct 2022)
 max_book_cover_calls_per_min: 100
 
+# Indicates whether the raw response from the API should be recorded in a file (true) or not (false)
+log_api_response: false
+# Path to directory to record API responses, if enabled
+log_api_response_dir: /path/to/your/custom/api_output
+
 # Proxy servers, if needed. Leave as it is if not using proxies.
 #
 # E.g. to use 'proxy1.domain.net' for http and 'proxy1.domain.net' for https:
