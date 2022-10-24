@@ -257,8 +257,9 @@ for r_raw in list_requests:
         
         mfacets = urllib.parse.quote(r['facets'])
         
-        from_year = r['from_YYYY']
-        
+        years_back = r['years_back'] 
+        from_year = current_year - int(years_back)
+
         # if from_year has a value
         if from_year:
             # add separator to mfacets if it had content
